@@ -1,4 +1,8 @@
 
+
+//======== ATM version 0.1.1 ========//
+//======== NEED IN IMPROVEMENT! ========//
+
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
@@ -49,7 +53,7 @@ void cashWithdrowal(int clientId)
     
     FILE *pin;
     
-    pin = fopen("pin.txt", "r");
+    pin = fopen("text.txt", "r");
     for(int i = 0; i < 5; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
@@ -86,6 +90,7 @@ void cashWithdrowal(int clientId)
     
     int withdrowCash = 0;
     int leftCash = 0;
+    char leftCashStr[16] = "";
     
     int totalBalance = atoi(strBalance);
     
@@ -167,6 +172,62 @@ void cashWithdrowal(int clientId)
         printf("\nBALANCE: %d", leftCash);
     }
     
+    sprintf(leftCashStr, "%d", leftCash);
+    printf("\nBalance in string format: %s\n", leftCashStr);
+    // line[1000] = {0};
+    line_count = 0;
+    int all_count = 0;
+    
+    j = 0;
+    
+    // FILE *pin;
+    char str2[100] = "";
+    pin = fopen("text.txt", "r+");
+    for(int i = 0; i < 5; i++)
+    {
+        while((fgets(line, 1000, pin)) != NULL)
+        {
+            line_count++;
+            j = 0;
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
+            {
+                while((ch = fgetc(pin)) != '\n')
+                {
+                    if(ch == ' ') c++;
+                    else if(c == 2) break;
+                    str2[j++] = ch;
+                    all_count = line_count;
+                }
+            }
+        }
+    }
+    printf("str2: %s\n", str2);
+    printf("str2length: %ld\n", strlen(str2));
+    printf("line: %d\n", all_count);
+    
+    ////======= UPDATING BALANCE =======////
+    line_count = 0;
+    
+    pin = fopen("text.txt", "r+");
+    for(int i = 0; i < 5; i++)
+    {
+        while((fgets(line, 1000, pin)) != NULL)
+        {
+            line_count++;
+            j = 0;
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
+            {
+                fprintf(pin, "%s", str2);
+                fprintf(pin, "%d", leftCash);
+            }
+        }
+    }
+    fclose(pin);
+    
     // getCardNum(pinCode, cardNum, strBalance);
     exitOption(pinCode, cardNum, clientId, strBalance);
 }
@@ -183,7 +244,7 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
     
     FILE *pin;
     
-    pin = fopen("pin.txt", "r");
+    pin = fopen("text.txt", "r");
     for(int i = 0; i < 5; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
@@ -194,12 +255,12 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
             {
                 for(int k = 0; k < 30; k++)
                 {
-                    if(k > 20)
+                    if(k < 20)
                     {
                         strBalance[j] = line[k];
                         j++;
                     }
-                    // else continue;
+                    else continue;
                 }
             }
         }
@@ -262,7 +323,7 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
     
     FILE *pin;
     
-    pin = fopen("pin.txt", "r");
+    pin = fopen("text.txt", "r");
     for(int i = 0; i < 1;)
     {
         while((fgets(line, 1000, pin)) != NULL) 
@@ -389,7 +450,7 @@ void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
     
     FILE *pin;
     
-    pin = fopen("pin.txt", "r+");
+    pin = fopen("text.txt", "r+");
     for(int i = 0; i < 1;)
     {
         if((fgets(line, 1000, pin)) != NULL) 
@@ -472,7 +533,3 @@ int main()
     
     getCardNum(pinCode, cardNum, strBalance);
 }
-
-
-
-
