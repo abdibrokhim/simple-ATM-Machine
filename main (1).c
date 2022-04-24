@@ -1,7 +1,7 @@
 
-
-//======== ATM version 0.1.1 ========//
+//======== ATM version 0.1.2 ========//
 //======== NEED IN IMPROVEMENT! ========//
+
 
 #include <stdio.h>
 #include <math.h>
@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// #define totalBalance 1000000;
+#define totalClient 10
+#define fPath "text.txt"
+
 
 void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16]);
 void getCardNum(char pinCode[4], char cardNum[16], char strBalance[16]);
@@ -18,7 +20,7 @@ void getPinCode(char pinCode[4], char cardNum[16], char strBalance[16]);
 void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16]);
 void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16]);
 void smsInfo();
-void pinChange();
+void pinChange(int clientId);
 void cashWithdrowal(int clientId);
 void cardBalance(char pinCode[4], char cardNum[16], int clientId);
 void cardReturn(char pinCode[4], char cardNum[16], char strBalance[16]);
@@ -27,20 +29,98 @@ void errorPinCode(char pinCode[4], char cardNum[16], char strBalance[16]);
 void exitOption(char pinCode[4], char cardNum[16], int clientId, char strBalance[16]);
 
 
-
+////======= SMS INFO =======////
 void smsInfo()
 {
     int phoneNum = 0;
     
     printf("ENTER PHONE NUMBER: ");
     scanf("%d", &phoneNum);
+    
 }
 
-void pinChange()
+////======= PIN UPDATE =======////
+void pinChange(int clientId)
 {
-    printf("Hello");
+    char pinCode[4] = "";
+    char cardNum[16] = "";
+    char strBalance[16] = "";
+    
+    char newPinCode[4] = "";
+    
+    printf("ENTER NEW PIN CODE: ");
+    scanf("%s", newPinCode);
+    
+    char line[1000] = {0};
+    int line_count = 0;
+    int all_count = 0;
+    
+    int j = 0;
+    int j1 = 0;
+    
+    FILE *pin;
+    char str2[100] = "";
+    char str3[100] = "";
+    
+    ////======= READING PIN CODE =======////
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
+    {
+        while((fgets(line, 1000, pin)) != NULL)
+        {
+            line_count++;
+            j = 0;
+            j1 = 0;
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
+            {
+                while((ch = fgetc(pin)) != '\n')
+                {
+                    if(ch == ' ') c++;
+                    else if(c == 0) str2[j++] = ch;
+                    else if(c == 1) continue;
+                    else if(c == 2) str3[j1++] = ch;
+                    all_count = line_count;
+                }
+            }
+        }
+    }
+    // printf("str2: %s\n", str2);
+    // printf("\nstr3: %s\n", str3);
+    // printf("str2length: %ld\n", strlen(str2));
+    // printf("\nstr3length: %ld\n", strlen(str3));
+    // printf("line: %d\n", all_count);
+    
+    ////======= UPDATING PIN CODE =======////
+    line_count = 0;
+    
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
+    {
+        while((fgets(line, 1000, pin)) != NULL)
+        {
+            line_count++;
+            j = 0;
+            j1 = 0;
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
+            {
+                fprintf(pin, "%s", str2);
+                fprintf(pin, " ");
+                fprintf(pin, "%s", newPinCode);
+                fprintf(pin, " ");
+                fprintf(pin, "%s", str3);
+            }
+        }
+    }
+    fclose(pin);
+    
+    exitOption(pinCode, cardNum, clientId, strBalance);
 }
 
+////======= WITHDROWAL CASH =======////
 void cashWithdrowal(int clientId)
 {
     char strBalance[16] = "";
@@ -49,12 +129,12 @@ void cashWithdrowal(int clientId)
     unsigned int line_count = 0;
     
     int j = 0;
-    // int n = all_line;
     
     FILE *pin;
     
-    pin = fopen("text.txt", "r");
-    for(int i = 0; i < 5; i++)
+    ////======= READING BALANCE =======////
+    pin = fopen(fPath, "r");
+    for(int i = 0; i < totalClient; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
         {
@@ -73,10 +153,6 @@ void cashWithdrowal(int clientId)
                 }
             }
         }
-        // else
-        // {
-        //     errorCardNum(pinCode, cardNum);
-        // }
     }
     fclose(pin);
     
@@ -116,50 +192,106 @@ void cashWithdrowal(int clientId)
     {
         withdrowCash = minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", minCash);
-        printf("\nBALANCE: %d\n", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d\n", leftCash);
     }
     else if(option == 2)
     {
         withdrowCash = 2 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 3)
     {
         withdrowCash = 3 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 4)
     {
         withdrowCash = 4 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 5)
     {
         withdrowCash = 6 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 6)
     {
         withdrowCash = 8 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 7)
     {
         withdrowCash = 10 * minCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
+        // printf("\nBALANCE: %d", leftCash);
     }
     else if(option == 8)
     {
@@ -168,22 +300,26 @@ void cashWithdrowal(int clientId)
         
         withdrowCash = newCash;
         leftCash = totalBalance - withdrowCash;
-        printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
-        printf("\nBALANCE: %d", leftCash);
+        if(leftCash < 0)
+        {
+            printf("\nINSAFFICIENT BALANCE!");
+            exitOption(pinCode, cardNum, clientId, strBalance);
+        }
+        else 
+        {
+            printf("PLEASE, TAKE YOUR CASH: %d", withdrowCash);
+        }
     }
     
-    sprintf(leftCashStr, "%d", leftCash);
-    printf("\nBalance in string format: %s\n", leftCashStr);
-    // line[1000] = {0};
     line_count = 0;
     int all_count = 0;
     
     j = 0;
     
-    // FILE *pin;
     char str2[100] = "";
-    pin = fopen("text.txt", "r+");
-    for(int i = 0; i < 5; i++)
+    
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
         {
@@ -203,15 +339,13 @@ void cashWithdrowal(int clientId)
             }
         }
     }
-    printf("str2: %s\n", str2);
-    printf("str2length: %ld\n", strlen(str2));
-    printf("line: %d\n", all_count);
+    
     
     ////======= UPDATING BALANCE =======////
     line_count = 0;
     
-    pin = fopen("text.txt", "r+");
-    for(int i = 0; i < 5; i++)
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
         {
@@ -228,10 +362,10 @@ void cashWithdrowal(int clientId)
     }
     fclose(pin);
     
-    // getCardNum(pinCode, cardNum, strBalance);
     exitOption(pinCode, cardNum, clientId, strBalance);
 }
 
+////======= PRINT CARD BALANCE =======////
 void cardBalance(char pinCode[4], char cardNum[16], int clientId)
 {
     char strBalance[16] = "";
@@ -240,12 +374,12 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
     unsigned int line_count = 0;
     
     int j = 0;
-    // int n = all_line;
     
     FILE *pin;
     
-    pin = fopen("text.txt", "r");
-    for(int i = 0; i < 5; i++)
+    ////======= READING CARD BALANCE =======////
+    pin = fopen(fPath, "r");
+    for(int i = 0; i < totalClient; i++)
     {
         while((fgets(line, 1000, pin)) != NULL)
         {
@@ -264,10 +398,6 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
                 }
             }
         }
-        // else
-        // {
-        //     errorCardNum(pinCode, cardNum);
-        // }
     }
     fclose(pin);
     
@@ -277,6 +407,7 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
     exitOption(pinCode, cardNum, clientId, strBalance);
 }
 
+////========= OPTION before RETURN CARD and GET NEW ONE =========////
 void exitOption(char pinCode[4], char cardNum[16], int clientId, char strBalance[16])
 {
     int option = 0;
@@ -300,6 +431,7 @@ void exitOption(char pinCode[4], char cardNum[16], int clientId, char strBalance
     }
 }
 
+////========= RETURN CARD and GET NEW ONE =========////
 void cardReturn(char pinCode[4], char cardNum[16], char strBalance[16])
 {
     getCardNum(pinCode, cardNum, strBalance);
@@ -323,8 +455,9 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
     
     FILE *pin;
     
-    pin = fopen("text.txt", "r");
-    for(int i = 0; i < 1;)
+    ////======= READING/VALIDATING CARD NUMBER AND PIN CODE =======////
+    pin = fopen(fPath, "r");
+    for(int i = 0; i < totalClient; i++)
     {
         while((fgets(line, 1000, pin)) != NULL) 
         {
@@ -345,7 +478,7 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
                     z++;
                 }
             }
-            //Sometimes do not work properly [c]
+            //Sometimes may not work properly [c]
             c = 1;
             c1 = 0;
             j = 0;
@@ -372,6 +505,7 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
                 // printf("\n%d | %d\n", c, c1);
                 if(c >= 16 && c1 == 4)
                 {
+                    // clientId means current line
                     clientId = line_count;
                     // printf("clientId: %d", clientId);
                     menu(pinCode, cardNum, clientId, strBalance);
@@ -380,12 +514,6 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
             }
         }
         errorPinCode(pinCode, cardNum, strBalance);
-        // else 
-        // {
-        //     errorPinCode(pinCode, cardNum, strBalance);
-        // }
-        // printf("\n%d | %d\n", c, c1);
-        // printf("\n------\n");
     }
     fclose(pin);
 }
@@ -393,8 +521,6 @@ void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
 ////========= ERRORS =========////
 void errorCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
 {
-    // char cardNum[16] = "";
-    
     printf("\nINVALID!\n");
     printf("ENTER CARD NUMBER: ");
     scanf("%s", cardNum);
@@ -404,8 +530,6 @@ void errorCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
 
 void errorPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
 {
-    // char pinCode[4] = "";
-    
     printf("\nINVALID!\n");
     printf("ENTER PIN CODE: ");
     scanf("%s", pinCode);
@@ -417,9 +541,6 @@ void errorPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
 ////========= getCardNum =========////
 void getCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
 {
-    // char pinCode[4] = "";
-    // char cardNum[16] = "";
-    
     printf("\nPLEASE, INSERT YOUR CARD\n");
     printf("ENTER CARD NUMBER: ");
     scanf("%s", cardNum);
@@ -427,18 +548,16 @@ void getCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
     validCardNum(pinCode, cardNum, strBalance);
 }
 
-////========= getCardNum =========////
+////========= getPinCode =========////
 void getPinCode(char pinCode[4], char cardNum[16], char strBalance[16])
 {
-    // char pinCode[4] = "";
-    // char cardNum[16] = "";
-    
     printf("ENTER PIN CODE: ");
     scanf("%s", pinCode);
     
     validPinCode(pinCode, cardNum, strBalance);
 }
 
+////========= VALID CARD NUMBER =========////
 void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
 {
     char str[16] = "";
@@ -450,10 +569,11 @@ void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
     
     FILE *pin;
     
-    pin = fopen("text.txt", "r+");
-    for(int i = 0; i < 1;)
+    ////========= READING/VALIDATING CARD NUMBER =========////
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
     {
-        if((fgets(line, 1000, pin)) != NULL) 
+        while((fgets(line, 1000, pin)) != NULL) 
         {
             line_count++;
             j = 0;
@@ -478,15 +598,12 @@ void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16])
                 }
             }
         }
-        else
-        {
-            errorCardNum(pinCode, cardNum, strBalance);
-        }
+        errorCardNum(pinCode, cardNum, strBalance);
     }
     fclose(pin);
 }
 
-
+////========= MAIN MENU =========////
 void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16])
 {
     int option = 0;
@@ -509,7 +626,7 @@ void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16])
     }
     else if(option == 2)
     {
-        pinChange();
+        pinChange(clientId);
     }
     else if(option == 3)
     {
@@ -525,6 +642,7 @@ void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16])
     }
 }
 
+////========= DRIVER =========////
 int main()
 {
     char pinCode[4] = "";
@@ -533,3 +651,7 @@ int main()
     
     getCardNum(pinCode, cardNum, strBalance);
 }
+
+
+
+
