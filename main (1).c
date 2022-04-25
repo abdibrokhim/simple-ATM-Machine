@@ -12,6 +12,7 @@
 
 #define totalClient 10
 #define fPath "text.txt"
+#define fPath1 "text1.txt"
 
 
 void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16]);
@@ -19,7 +20,7 @@ void getCardNum(char pinCode[4], char cardNum[16], char strBalance[16]);
 void getPinCode(char pinCode[4], char cardNum[16], char strBalance[16]);
 void validCardNum(char pinCode[4], char cardNum[16], char strBalance[16]);
 void validPinCode(char pinCode[4], char cardNum[16], char strBalance[16]);
-void smsInfo();
+void smsInfo(int clientId);
 void pinChange(int clientId);
 void cashWithdrowal(int clientId);
 void cardBalance(char pinCode[4], char cardNum[16], int clientId);
@@ -30,13 +31,72 @@ void exitOption(char pinCode[4], char cardNum[16], int clientId, char strBalance
 
 
 ////======= SMS INFO =======////
-void smsInfo()
+void smsInfo(int clientId)
 {
-    int phoneNum = 0;
+    char pinCode[4] = "";
+    char cardNum[16] = "";
+    char strBalance[16] = "";
+    
+    char phoneNum[12] = "";
     
     printf("ENTER PHONE NUMBER: ");
-    scanf("%d", &phoneNum);
+    scanf("%s", phoneNum);
     
+    char line[1000] = {0};
+    int line_count = 0;
+    int current_line = 0;
+    
+    int j = 0;
+    
+    FILE *pin;
+    char str2[100] = "";
+    
+    ////======= READING CARD NUMBER =======////
+    pin = fopen(fPath, "r+");
+    for(int i = 0; i < totalClient; i++)
+    {
+        while((fgets(line, 1000, pin)) != NULL)
+        {
+            line_count++;
+            j = 0;
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
+            {
+                while((ch = fgetc(pin)) != '\n')
+                {
+                    if(ch == ' ') c++;
+                    else if(c == 0) str2[j++] = ch;
+                    else if(c == 1) break;
+                    current_line = line_count;
+                }
+            }
+        }
+    }
+    fclose(pin);
+    
+    line_count = 0;
+    pin = fopen(fPath1, "a+");
+    for(int i = 0; i < 1; i++)
+    {
+        line_count++;
+        if((fgets(line, 1000, pin)) != NULL)
+        {
+            fprintf(pin, "\n");
+            fprintf(pin, "%s", str2);
+            fprintf(pin, " ");
+            fprintf(pin, "%s", phoneNum);
+        }
+        else
+        {
+            fprintf(pin, "%s", str2);
+            fprintf(pin, " ");
+            fprintf(pin, "%s", phoneNum);
+        }
+    }
+    fclose(pin);
+    
+    exitOption(pinCode, cardNum, clientId, strBalance);
 }
 
 ////======= PIN UPDATE =======////
@@ -53,7 +113,7 @@ void pinChange(int clientId)
     
     char line[1000] = {0};
     int line_count = 0;
-    int all_count = 0;
+    int current_line = 0;
     
     int j = 0;
     int j1 = 0;
@@ -81,7 +141,7 @@ void pinChange(int clientId)
                     else if(c == 0) str2[j++] = ch;
                     else if(c == 1) continue;
                     else if(c == 2) str3[j1++] = ch;
-                    all_count = line_count;
+                    current_line = line_count;
                 }
             }
         }
@@ -90,7 +150,7 @@ void pinChange(int clientId)
     // printf("\nstr3: %s\n", str3);
     // printf("str2length: %ld\n", strlen(str2));
     // printf("\nstr3length: %ld\n", strlen(str3));
-    // printf("line: %d\n", all_count);
+    // printf("line: %d\n", current_line);
     
     ////======= UPDATING PIN CODE =======////
     line_count = 0;
@@ -170,8 +230,8 @@ void cashWithdrowal(int clientId)
     
     int totalBalance = atoi(strBalance);
     
-    printf("\nTotal Balance Int: %d\n", totalBalance);
-    printf("\nTotal Balance String: %s\n", strBalance);
+    // printf("\nTotal Balance Int: %d\n", totalBalance);
+    // printf("\nTotal Balance String: %s\n", strBalance);
     
     printf("\n");
     printf("[1]-> 50 000\n");
@@ -312,7 +372,7 @@ void cashWithdrowal(int clientId)
     }
     
     line_count = 0;
-    int all_count = 0;
+    int current_line = 0;
     
     j = 0;
     
@@ -334,7 +394,7 @@ void cashWithdrowal(int clientId)
                     if(ch == ' ') c++;
                     else if(c == 2) break;
                     str2[j++] = ch;
-                    all_count = line_count;
+                    current_line = line_count;
                 }
             }
         }
@@ -622,7 +682,7 @@ void menu(char pinCode[4], char cardNum[16], int clientId, char strBalance[16])
     
     if(option == 1)
     {
-        smsInfo();
+        smsInfo(clientId);
     }
     else if(option == 2)
     {
