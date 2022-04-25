@@ -445,16 +445,16 @@ void cardBalance(char pinCode[4], char cardNum[16], int clientId)
         {
             line_count++;
             j = 0;
-            if(line_count == clientId)
+            char ch;
+            int c = 0;
+            if(line_count == (clientId - 1))
             {
-                for(int k = 0; k < 30; k++)
+                while((ch = fgetc(pin)) != '\n')
                 {
-                    if(k < 20)
-                    {
-                        strBalance[j] = line[k];
-                        j++;
-                    }
-                    else continue;
+                    if(ch == ' ') c++;
+                    else if(c == 2) strBalance[j++] = ch;
+                    // str2[j++] = ch;
+                    // current_line = line_count;
                 }
             }
         }
